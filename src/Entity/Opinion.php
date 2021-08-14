@@ -42,6 +42,12 @@ class Opinion
      */
     private $email;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Book::class, inversedBy="opinions")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $book;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -103,6 +109,18 @@ class Opinion
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getBook(): ?Book
+    {
+        return $this->book;
+    }
+
+    public function setBook(?Book $book): self
+    {
+        $this->book = $book;
 
         return $this;
     }
