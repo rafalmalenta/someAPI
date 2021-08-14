@@ -13,7 +13,7 @@ class BooksAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        // TODO: Implement supports() method.
+        return false;
     }
 
     public function authenticate(Request $request): PassportInterface

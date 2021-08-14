@@ -43,8 +43,8 @@ class Opinion
     private $email;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Book::class, inversedBy="opinions")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity="Book")
+     * @ORM\JoinColumn(name="book_isbn", referencedColumnName="isbn")
      */
     private $book;
 
@@ -113,15 +113,20 @@ class Opinion
         return $this;
     }
 
-    public function getBook(): ?Book
+    /**
+     * @return mixed
+     */
+    public function getBook()
     {
         return $this->book;
     }
 
-    public function setBook(?Book $book): self
+    /**
+     * @param mixed $book
+     */
+    public function setBook($book): void
     {
         $this->book = $book;
-
-        return $this;
     }
+
 }

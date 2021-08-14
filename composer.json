@@ -4,11 +4,13 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=7.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "adhocore/jwt": "^1.1",
         "composer/package-versions-deprecated": "1.11.99.2",
         "doctrine/doctrine-bundle": "^2.4",
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
         "doctrine/doctrine-migrations-bundle": "^3.1",
         "doctrine/orm": "^2.9",
         "symfony/console": "5.3.*",
@@ -21,7 +23,9 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.33"
+        "symfony/debug-bundle": "5.3.*",
+        "symfony/maker-bundle": "^1.33",
+        "symfony/var-dumper": "5.3.*"
     },
     "config": {
         "optimize-autoloader": true,

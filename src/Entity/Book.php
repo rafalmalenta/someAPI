@@ -6,6 +6,7 @@ use App\Repository\BookRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\ManyToOne;
 
 /**
  * @ORM\Entity(repositoryClass=BookRepository::class)
@@ -35,20 +36,10 @@ class Book
     private $created;
 
     /**
-     * @ORM\OneToMany(targetEntity=Opinion::class, mappedBy="book", orphanRemoval=true)
-     */
-    private $opinions;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Author::class, inversedBy="books")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity="Author")
+     * @ORM\JoinColumn(name="author_email", referencedColumnName="email")
      */
     private $author;
-
-    public function __construct()
-    {
-        $this->opinions = new ArrayCollection();
-    }
 
     public function getIsbn(): ?string
     {
@@ -128,15 +119,19 @@ class Book
         return $this;
     }
 
-    public function getAuthor(): ?Author
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(?Author $author): self
+    /**
+     * @param mixed $author
+     */
+    public function setAuthor($author): void
     {
         $this->author = $author;
+    }
 
-        return $this;
+    /**
+     * @return mixed
+     */
+    public function getAuthor()
+    {
+        return $this->author;
     }
 }

@@ -33,9 +33,19 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity=Book::class, mappedBy="author", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Book::class, mappedBy="author", orphanRemoval=true, indexBy="isbn")
      */
     private $books;
+
+    /**
+     * @ORM\Column(type="string", length=50)
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    private $surname;
 
     public function __construct()
     {
@@ -152,6 +162,30 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
                 $book->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getSurname(): ?string
+    {
+        return $this->surname;
+    }
+
+    public function setSurname(string $surname): self
+    {
+        $this->surname = $surname;
 
         return $this;
     }
