@@ -10,14 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Book
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
 
     /**
+     * @ORM\Id
      * @ORM\Column(type="string", length=13, unique=true)
      */
     private $isbn;
@@ -36,11 +31,6 @@ class Book
      * @ORM\Column(type="date")
      */
     private $created;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getIsbn(): ?string
     {
