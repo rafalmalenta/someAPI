@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  php-task:
+    container_name: booksapi
+    build: "./"
+    ports:
+    - 5555:8000
+    volumes:
+    - ./:/books/
+
+    depends_on:
+      - db
+  db:
+    command: --default-authentication-plugin=mysql_native_password
+    build: "./db"
+    ports:
+      - 3306:3306
+    container_name: db
