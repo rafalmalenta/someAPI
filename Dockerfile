@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     unzip
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install pdo pdo_mysql
+
 RUN composer install
 
 EXPOSE 8000
