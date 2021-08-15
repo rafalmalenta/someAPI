@@ -3,11 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\BookRepository;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\ManyToOne;
-
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=BookRepository::class)
  */
@@ -17,21 +15,25 @@ class Book
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=13, unique=true)
+     * @Groups({"mybooks"})
      */
     private $isbn;
 
     /**
      * @ORM\Column(type="string", length=200)
+     * @Groups({"mybooks"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"mybooks"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"mybooks"})
      */
     private $created;
 
@@ -40,6 +42,11 @@ class Book
      * @ORM\JoinColumn(name="author_email", referencedColumnName="email")
      */
     private $author;
+    /**
+     * @ORM\OneToMany(targetEntity="Opinion", mappedBy="book")
+     * @Groups({"mybooks"})
+     */
+    private $opinions;
 
     public function getIsbn(): ?string
     {
@@ -77,9 +84,9 @@ class Book
         return $this;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getCreated(): ?string
     {
-        return $this->created;
+        return $this->created->format("m/d/Y");
     }
 
     public function setCreated(\DateTimeInterface $created): self
@@ -122,9 +129,10 @@ class Book
     /**
      * @param mixed $author
      */
-    public function setAuthor($author): void
+    public function setAuthor($author): self
     {
         $this->author = $author;
+        return $this;
     }
 
     /**

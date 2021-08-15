@@ -39,11 +39,12 @@ class SecurityController extends AbstractController
             $email = $body['email'];
             $password = $body['password'];
             $user = $entityManager->getRepository(Author::class)->findOneBy(['email' => $email]);
+
             if ($user and $passwordEncoder->isPasswordValid($user, $password)) {
                 $token = $JWTservice->generateToken($user->getUserIdentifier());
                 return $this->json([
                     'token' => $token,
-                ]);
+                ])->setStatusCode(200);
             }
         }
         return $this->json([

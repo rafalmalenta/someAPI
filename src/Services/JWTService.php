@@ -14,15 +14,15 @@ class JWTService
     {
        $this->JWT = new JWT("secret",'HS256', 6000);
     }
-    public function generateToken($username):string
+    public function generateToken($email):string
     {
         return $this->JWT->encode([
-            'username'=>$username
+            'email'=>$email
         ]);
     }
     public function getToken($token):string
     {
-        return $this->JWT->decode($token,true)["username"];
+        return $this->JWT->decode($token,true)["email"];
     }
     public function verifyToken($token):bool
     {

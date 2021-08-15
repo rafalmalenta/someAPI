@@ -21,7 +21,7 @@ class AuthorFixtures extends Fixture
         $author->setName("Mark")
             ->setSurname("Twain")
             ->setEmail("mark@twain.xx")
-            ->setPassword($this->passwordEncoder->hashPassword($author, "123Qwe"));
+            ->setPassword($this->passwordEncoder->hashPassword($author, "12345Qwe"));
         $manager->persist($author);
         $manager->flush();
     }
