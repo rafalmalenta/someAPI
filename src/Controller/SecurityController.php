@@ -96,7 +96,8 @@ class SecurityController extends AbstractController
             return $this->json([
                 'errors'=>'email taken'
             ])->setStatusCode(400);
-        $user= new Author();
+
+        $user = new Author();
             $user->setName($payLoad["name"])
                 ->setSurname($payLoad["surname"])
                 ->setEmail($payLoad["email"])
