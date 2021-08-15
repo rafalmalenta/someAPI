@@ -101,7 +101,7 @@ class SecurityController extends AbstractController
             $user->setName($payLoad["name"])
                 ->setSurname($payLoad["surname"])
                 ->setEmail($payLoad["email"])
-                ->setPassword($passwordEncoder->hashPassword($user, $payLoad['email']));
+                ->setPassword($passwordEncoder->hashPassword($user, $payLoad['password']));
         try {
             $entityManager->persist($user);
             $entityManager->flush();

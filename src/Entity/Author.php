@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=AuthorRepository::class)
@@ -188,5 +189,11 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
         $this->surname = $surname;
 
         return $this;
+    }
+    /**
+     * @Groups({"bookList","details"})
+     */
+    public function getFullName(): string{
+        return $this->name." ".$this->surname;
     }
 }

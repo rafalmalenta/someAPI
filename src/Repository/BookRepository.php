@@ -19,22 +19,25 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
-    // /**
-    //  * @return Book[] Returns an array of Book objects
-    //  */
-    /*
-    public function findByExampleField($value)
+     /**
+      * @return Book[] Returns an array of Book objects
+      */
+    public function findAllPaginatedWithSearchTerms($page, $searchTitleFraze, $searchDescriptionFraze)
     {
         return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
+            ->andWhere('b.title LIKE :val')
+            ->setParameter('val', "%".$searchTitleFraze."%")
+            ->andWhere('b.description LIKE :val')
+            ->setParameter('val', "%".$searchDescriptionFraze."%")
+            ->orderBy('b.created', 'ASC')
+            ->setMaxResults(10)
+            ->setFirstResult(($page-1) * 10)
             ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
+
 
     /*
     public function findOneBySomeField($value): ?Book

@@ -36,6 +36,14 @@ class PayloadValidator
                     if(!$this->longerThanOrEqual($fieldName, $conditionDetails['value']))
                         $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value']." character long";
                     break;
+                case "greaterThanOrEqual":
+                    if(!$this->greaterThanOrEqual($fieldName, $conditionDetails['value']))
+                        $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value'];
+                    break;
+                case "smallerThanOrEqual":
+                    if(!$this->smallerThanOrEqual($fieldName, $conditionDetails['value']))
+                        $this->errors[] = $fieldName." has to be maximum ".$conditionDetails['value'];
+                    break;
                 case "regEx":
                     if(!preg_match($conditionDetails['value'], $this->requestContent["$fieldName"]))
                         $this->errors[] = $conditionDetails['msg'];
@@ -43,9 +51,17 @@ class PayloadValidator
                 case "passwordCheck":
                     if($this->requestContent["password"] !== $this->requestContent["password2"])
                         $this->errors[] = "passwords doesnt match";
+
             }
     }
-
+    public function greaterThanOrEqual($fieldName, $value): bool
+    {
+        return $this->requestContent["$fieldName"] >= $value;
+    }
+    public function smallerThanOrEqual($fieldName, $value): bool
+    {
+        return $this->requestContent["$fieldName"] <= $value;
+    }
     public function longerThanOrEqual($fieldName, $value): bool
     {
         return mb_strlen($this->requestContent["$fieldName"]) >= $value;

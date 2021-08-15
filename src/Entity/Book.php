@@ -15,36 +15,37 @@ class Book
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=13, unique=true)
-     * @Groups({"mybooks"})
+     * @Groups({"mybooks","bookList","details"})
      */
     private $isbn;
 
     /**
      * @ORM\Column(type="string", length=200)
-     * @Groups({"mybooks"})
+     * @Groups({"mybooks","bookList","details"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
-     * @Groups({"mybooks"})
+     * @Groups({"mybooks","bookList","details"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="date")
-     * @Groups({"mybooks"})
+     * @Groups({"mybooks","bookList","details"})
      */
     private $created;
 
     /**
      * @ORM\ManyToOne(targetEntity="Author")
      * @ORM\JoinColumn(name="author_email", referencedColumnName="email")
+     * @Groups({"bookList","details"})
      */
     private $author;
     /**
      * @ORM\OneToMany(targetEntity="Opinion", mappedBy="book")
-     * @Groups({"mybooks"})
+     * @Groups({"mybooks","details"})
      */
     private $opinions;
 

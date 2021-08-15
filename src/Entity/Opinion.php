@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\OpinionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=OpinionRepository::class)
@@ -19,26 +20,31 @@ class Opinion
 
     /**
      * @ORM\Column(type="smallint")
+     * @Groups({"details"})
      */
     private $rating;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"details"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Groups({"details"})
      */
     private $author;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"details"})
      */
     private $created;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"details"})
      */
     private $email;
 
@@ -89,9 +95,9 @@ class Opinion
         return $this;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getCreated(): string
     {
-        return $this->created;
+        return $this->created->format('Y-m-d');
     }
 
     public function setCreated(\DateTimeInterface $created): self
@@ -124,9 +130,10 @@ class Opinion
     /**
      * @param mixed $book
      */
-    public function setBook($book): void
+    public function setBook($book): self
     {
         $this->book = $book;
+        return $this;
     }
 
 }

@@ -16,6 +16,29 @@ use Symfony\Component\Routing\Annotation\Route;
 class BooksController extends AbstractController
 {
     /**
+     * @Route("/books", name="allooks", methods={"GET"})
+     */
+    public function allBooks(Request $request, EntityManagerInterface $manager): Response
+    {
+        $page = $request->query->get("page") ?? 1;
+        $searchTitleFraze = $request->query->get("searchTitleFraze") ?? "";
+        $searchDescriptionFraze = $request->query->get("searchDescriptionFraze") ?? "";
+        $booksRepo = $manager->getRepository(Book::class);
+
+        $booksCount = $booksRepo->count([]);
+        $maxPages = ceil($booksCount/10);
+        $booksList = $booksRepo->findAllPaginatedWithSearchTerms($page, $searchTitleFraze, $searchDescriptionFraze);
+        return $this->json([
+            "meta"=>["page"=>$page, "limit"=>10, "total_pages"=>$maxPages, "total_books"=>$booksCount],
+            "books"=>$booksList,
+        ],
+        200,
+        [],
+        [
+            "groups"=>"bookList"
+        ]);
+    }
+    /**
      * @Route("/mybooks", name="mybooks", methods={"GET"})
      * @IsGranted("ROLE_AUTHOR")
      */
@@ -34,7 +57,7 @@ class BooksController extends AbstractController
         ]);
     }
     /**
-     * @Route("/mybooks", name="addbook", methods={"POST"})
+     * @Route("/books", name="addbook", methods={"POST"})
      * @IsGranted("ROLE_AUTHOR")
      */
     public function addBook(Request $request, EntityManagerInterface $manager): Response
@@ -87,11 +110,12 @@ class BooksController extends AbstractController
         }
     }
     /**
-     * @Route("/mybooks/{isbn}", name="addbook", methods={"PATCH"})
+     * @Route("/books/{isbn}", name="editbook", methods={"PATCH"})
      * @IsGranted("ROLE_AUTHOR")
      */
     public function editBook(Book $book, Request $request, EntityManagerInterface $manager): Response
     {
+        $this->denyAccessUnlessGranted('OWNS', $book);
         $payloadValidator = new PayloadValidator($request->getContent());
         $user = $this->getUser();
         if(!$payloadValidator->isRequestValidJson()){
@@ -118,6 +142,31 @@ class BooksController extends AbstractController
             "message" => "edited"
         ]);
     }
-
+    /**
+     * @Route("/books/{isbn}", name="editbook", methods={"DELETE"})
+     * @IsGranted("ROLE_AUTHOR")
+     */
+    public function deleteBook(Book $book, Request $request, EntityManagerInterface $manager): Response
+    {
+        $this->denyAccessUnlessGranted('OWNS', $book);
+        $comments = $book->getOpinions();
+        if($comments)
+            return $this->json([
+                "error"=>"You cant remove opinionated book"
+            ])->setStatusCode(400);
+        try {
+            $manager->remove($book);
+            $manager->flush();
+            return $this->json([
+                "message"=>"deleted"
+            ])->setStatusCode(203);
+        }
+        catch (\Exception $e)
+        {
+            return $this->json([
+                "error"=>$e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
 
 }
