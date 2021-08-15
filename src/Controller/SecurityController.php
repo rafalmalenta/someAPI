@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Author;
 use App\Services\JWTService;
+use App\Services\PayloadValidator;
 use App\Services\RequestValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,28 +26,25 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-        $requestValidator = new RequestValidator($request->getContent());
+        $payloadValidator = new PayloadValidator($request->getContent());
 
-        if(!$requestValidator->isRequestValidJson()){
+        if(!$payloadValidator->isRequestValidJson()){
             return $this->json([
                 'error' => 'bad request',
             ])->setStatusCode(400);
         }
-        $requestValidator->setValidValuesArrayUsingPattern(["email"=>'/^\S+@\S+$/',"password"=>'/^(?=.*[a-z])[a-zA-Z\d]{7,250}$/']);
+        $payload = $payloadValidator->getRequestContent();
 
-        if($requestValidator->allValuesPassed()){
-            $body = $requestValidator->getValidValues();
-            $email = $body['email'];
-            $password = $body['password'];
-            $user = $entityManager->getRepository(Author::class)->findOneBy(['email' => $email]);
-
-            if ($user and $passwordEncoder->isPasswordValid($user, $password)) {
-                $token = $JWTservice->generateToken($user->getUserIdentifier());
-                return $this->json([
-                    'token' => $token,
-                ])->setStatusCode(200);
-            }
+        $email = $payload['email'];
+        $password = $payload['password'];
+        $user = $entityManager->getRepository(Author::class)->findOneBy(['email' => $email]);
+        if ($user and $passwordEncoder->isPasswordValid($user, $password)) {
+            $token = $JWTservice->generateToken($user->getUserIdentifier());
+            return $this->json([
+                'token' => $token,
+            ])->setStatusCode(200);
         }
+
         return $this->json([
             'error' => 'invalid credentials',
         ])->setStatusCode(401);
@@ -60,44 +58,61 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-        $requestValidator = new RequestValidator($request->getContent());
-
-        if(!$requestValidator->isRequestValidJson())
+        $payloadValidator = new PayloadValidator($request->getContent());
+        if (!$payloadValidator->isRequestValidJson())
             return $this->json([
-                'error' => 'bad request',
+                'error' => 'bad payload',
+            ])->setStatusCode(400);
+        $payloadValidator->validateField("password", [
+            "longerThanOrEqual" =>['value'=> 7],
+            "shorterThanOrEqual" => ['value'=>250],
+            "regEx" =>['value'=>'/^(?=.*[a-z])(?=.*[A-Z]).*$/',
+                'msg'=>"password must contain at least one upper case and lowercase letter"
+                ],
+            "passwordCheck"=>[]
+        ]);
+        $payloadValidator->validateField("name", [
+            "longerThanOrEqual" =>['value'=> 2],
+            "shorterThanOrEqual" => ['value'=>50]
+        ]);
+        $payloadValidator->validateField("surname", [
+            "longerThanOrEqual" =>['value'=> 2],
+            "shorterThanOrEqual" => ['value'=>100]
+        ]);
+        $payloadValidator->validateField("email", [
+            "regEx" =>[
+                'value'=>'/^\S+@\S+$/',
+                'msg'=>"it doesnt looks like valid email"
+            ]
+        ]);
+        if(!$payloadValidator->allIsGood())
+            return $this->json([
+                'errors'=>$payloadValidator->getErrors()
             ])->setStatusCode(400);
 
-        $requestValidator->setValidValuesArrayUsingPattern([
-            "email"=>'/^\S+@\S+$/',
-            "name"=>'/^[a-zA-Z\d]{2,50}$/',
-            "surname"=>'/^[a-zA-Z\d]{2,100}$/',
-            "password"=>'/^(?=.*[a-z])[a-zA-Z\d]{7,250}$/',
-            "password2"=>'/^(?=.*[a-z])[a-zA-Z\d]{7,250}$/']);
-
-        if($requestValidator->allValuesPassed()){
-            $body = $requestValidator->getValidValues();
-            if($entityManager->getRepository(Author::class)->findOneBy(['email'=>$body['email']]))
-                return $this->json([
-                    'error' => "name taken"
-                ])->setStatusCode(406);
-            if($body["password"] !== $body["password2"])
-                return $this->json([
-                    'error' => "passwords doesnt match"
-                ])->setStatusCode(406);
-            $user= new Author();
-            $user->setName($body["name"])
-                ->setSurname($body["surname"])
-                ->setEmail($body["email"])
-                ->setPassword($passwordEncoder->hashPassword($user, $body['email']));
+        $payLoad = $payloadValidator->getRequestContent();
+        $emailDuplicate = $entityManager->getRepository(Author::class)->findBy(['email'=>$payLoad['email']]);
+        if ($emailDuplicate)
+            return $this->json([
+                'errors'=>'email taken'
+            ])->setStatusCode(400);
+        $user= new Author();
+            $user->setName($payLoad["name"])
+                ->setSurname($payLoad["surname"])
+                ->setEmail($payLoad["email"])
+                ->setPassword($passwordEncoder->hashPassword($user, $payLoad['email']));
+        try {
             $entityManager->persist($user);
             $entityManager->flush();
             return $this->json([
                 'message' => 'successfully created account',
             ])->setStatusCode(201);
         }
-
-        return $this->json([
-            'error' => 'incomplete body',
-        ])->setStatusCode(406);
+        catch (\Exception $e){
+            return $this->json([
+                'error' => 'internal server error',
+            ])->setStatusCode(500);
+        }
     }
+
 }
