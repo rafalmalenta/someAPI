@@ -23,6 +23,7 @@ class BooksController extends AbstractController
         $page = $request->query->get("page") ?? 1;
         $searchTitleFraze = $request->query->get("searchTitleFraze") ?? "";
         $searchDescriptionFraze = $request->query->get("searchDescriptionFraze") ?? "";
+
         $booksRepo = $manager->getRepository(Book::class);
 
         $booksCount = $booksRepo->count([]);

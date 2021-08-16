@@ -24,18 +24,18 @@ class BookRepository extends ServiceEntityRepository
       */
     public function findAllPaginatedWithSearchTerms($page, $searchTitleFraze, $searchDescriptionFraze)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.title LIKE :val')
-            ->setParameter('val', "%".$searchTitleFraze."%")
-            ->andWhere('b.description LIKE :val')
-            ->setParameter('val', "%".$searchDescriptionFraze."%")
+        $query = $this->createQueryBuilder('b')
+            ->andWhere('b.title like :val1')
+            ->setParameter('val1', "%$searchTitleFraze%")
+            ->andWhere('b.description LIKE :val2')
+            ->setParameter('val2', "%$searchDescriptionFraze%")
             ->orderBy('b.created', 'ASC')
             ->setMaxResults(10)
             ->setFirstResult(($page-1) * 10)
-            ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
+        return $query;
     }
 
 
