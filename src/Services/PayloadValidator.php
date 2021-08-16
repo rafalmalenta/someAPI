@@ -29,19 +29,19 @@ class PayloadValidator
         foreach ($conditions as $conditionName=>$conditionDetails)
             switch ($conditionName){
                 case "shorterThanOrEqual":
-                    if(!$this->shorterThanOrEqual($fieldName, $conditionDetails['value']))
+                    if(mb_strlen($this->requestContent[$fieldName]) >= $conditionDetails['value'])
                         $this->errors[] = $fieldName." has to be maximum ".$conditionDetails['value']." character long";
                     break;
                 case "longerThanOrEqual":
-                    if(!$this->longerThanOrEqual($fieldName, $conditionDetails['value']))
+                    if(mb_strlen($this->requestContent[$fieldName]) <= $conditionDetails['value'])
                         $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value']." character long";
                     break;
                 case "greaterThanOrEqual":
-                    if(!$this->greaterThanOrEqual($fieldName, $conditionDetails['value']))
+                    if($this->requestContent[$fieldName] <= $conditionDetails['value'])
                         $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value'];
                     break;
                 case "smallerThanOrEqual":
-                    if(!$this->smallerThanOrEqual($fieldName, $conditionDetails['value']))
+                    if($this->requestContent[$fieldName] >= $conditionDetails['value'])
                         $this->errors[] = $fieldName." has to be maximum ".$conditionDetails['value'];
                     break;
                 case "regEx":
@@ -54,22 +54,7 @@ class PayloadValidator
 
             }
     }
-    public function greaterThanOrEqual($fieldName, $value): bool
-    {
-        return $this->requestContent["$fieldName"] >= $value;
-    }
-    public function smallerThanOrEqual($fieldName, $value): bool
-    {
-        return $this->requestContent["$fieldName"] <= $value;
-    }
-    public function longerThanOrEqual($fieldName, $value): bool
-    {
-        return mb_strlen($this->requestContent["$fieldName"]) >= $value;
-    }
-    public function shorterThanOrEqual($fieldName, $value): bool
-    {
-        return mb_strlen($this->requestContent["$fieldName"]) <= $value;
-    }
+
     public function allIsGood(): bool
     {
         return count($this->errors) === 0;
