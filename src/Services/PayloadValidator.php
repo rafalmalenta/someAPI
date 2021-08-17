@@ -26,39 +26,92 @@ class PayloadValidator
     }
     public function validateField(string $fieldName, array $conditions)
     {
-        foreach ($conditions as $conditionName=>$conditionDetails)
-            if(!key_exists($fieldName,$this->requestContent)){
-                $this->errors[]="missing value";
-                return;
-            }
-            switch ($conditionName){
+        foreach ($conditions as $conditionName => $conditionDetails) {
+
+            switch ($conditionName) {
                 case "shorterThanOrEqual":
-                    if(mb_strlen($this->requestContent[$fieldName]) >= $conditionDetails['value'])
-                        $this->errors[] = $fieldName." has to be maximum ".$conditionDetails['value']." character long";
+                    $this->shorterThanOrEqual($fieldName, $conditionDetails['value']);
                     break;
                 case "longerThanOrEqual":
-                    if(mb_strlen($this->requestContent[$fieldName]) <= $conditionDetails['value'])
-                        $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value']." character long";
+                    $this->longerThanOrEqual($fieldName, $conditionDetails['value']);
                     break;
                 case "greaterThanOrEqual":
-                    if($this->requestContent[$fieldName] <= $conditionDetails['value'])
-                        $this->errors[] = $fieldName." has to be minimum ".$conditionDetails['value'];
+                    $this->greaterThanOrEqual($fieldName, $conditionDetails['value']);
                     break;
                 case "smallerThanOrEqual":
-                    if($this->requestContent[$fieldName] >= $conditionDetails['value'])
-                        $this->errors[] = $fieldName." has to be maximum ".$conditionDetails['value'];
+                    $this->smallerThanOrEqual($fieldName, $conditionDetails['value']);
                     break;
                 case "regEx":
-                    if(!preg_match($conditionDetails['value'], $this->requestContent["$fieldName"]))
+                    if (!$this->regEx($fieldName, $conditionDetails['value']))
                         $this->errors[] = $conditionDetails['msg'];
                     break;
                 case "passwordCheck":
-                    if($this->requestContent["password"] !== $this->requestContent["password2"])
-                        $this->errors[] = "passwords doesnt match";
-
+                    if($this->offsetExistenceCheck("password") and $this->offsetExistenceCheck("password2"))
+                        if ($this->requestContent["password"] !== $this->requestContent["password2"])
+                            $this->errors[] = "passwords doesnt match";
+                    break;
+                case "ifExistValidate":
+                    if($this->offsetExistenceCheck("email"))
+                     if (!$this->regEx($fieldName, $conditionDetails['value']))
+                         $this->errors[] = $conditionDetails['msg'];
             }
+        }
     }
 
+    public function regEx($fieldName, $value): bool
+    {
+        if(!$this->offsetExistenceCheck($fieldName)) {
+            $this->errors[] = $fieldName ." is required";
+            return false;
+        }
+        if (!preg_match($value, $this->requestContent["$fieldName"]))
+            return false;
+        return true;
+    }
+    public function smallerThanOrEqual($fieldName, $value): void
+    {
+        if(!$this->offsetExistenceCheck($fieldName)) {
+            $this->errors[] = $fieldName ." is required";
+            return;
+        }
+        if ($this->requestContent["$fieldName"] > $value)
+            $this->errors[] = $fieldName . " has to be maximum " .$value;
+    }
+    public function greaterThanOrEqual($fieldName, $value): void
+    {
+        if(!$this->offsetExistenceCheck($fieldName)) {
+            $this->errors[] = $fieldName ." is required";
+            return;
+        }
+        if ($this->requestContent["$fieldName"] < $value)
+            $this->errors[] = $fieldName . " has to be minimum " .$value;
+    }
+    public function longerThanOrEqual($fieldName, $value): void
+    {
+        if(!$this->offsetExistenceCheck($fieldName)) {
+            $this->errors[] = $fieldName ." is required";
+            return;
+        }
+        if (mb_strlen($this->requestContent["$fieldName"]) <= $value)
+            $this->errors[] = $fieldName . " has to be minimum " .$value. " character long";
+    }
+    public function shorterThanOrEqual($fieldName, $value): void
+    {
+        if(!$this->offsetExistenceCheck($fieldName)) {
+            $this->errors[] = $fieldName ." is required";
+            return;
+        }
+        if (mb_strlen($this->requestContent["$fieldName"]) >= $value)
+            $this->errors[] = $fieldName . " has to be maximum " .$value. " character long";
+    }
+
+    public function offsetExistenceCheck($fieldName): bool
+    {
+        if(!key_exists($fieldName, $this->requestContent)) {
+            return false;
+        }
+        return true;
+    }
     public function allIsGood(): bool
     {
         return count($this->errors) === 0;

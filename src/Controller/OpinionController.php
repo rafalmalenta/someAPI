@@ -53,12 +53,8 @@ class OpinionController extends AbstractController
             "longerThanOrEqual"=>['value'=>2],
             "shorterThanOrEqual"=>['value'=>100],
         ]);
-        $payloadValidator->validateField("author",[
-            "longerThanOrEqual"=>['value'=>2],
-            "shorterThanOrEqual"=>['value'=>100],
-        ]);
         $payloadValidator->validateField("email",[
-            "none"=>[],
+            "ifExistValidate"=>[ 'value'=>'/^\S+@\S+$/','msg'=>"email is not required, dont send fake one"],
         ]);
         if (!$payloadValidator->allIsGood())
             return $this->json([
