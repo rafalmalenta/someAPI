@@ -27,6 +27,10 @@ class PayloadValidator
     public function validateField(string $fieldName, array $conditions)
     {
         foreach ($conditions as $conditionName=>$conditionDetails)
+            if(!key_exists($fieldName,$this->requestContent)){
+                $this->errors[]="missing value";
+                return;
+            }
             switch ($conditionName){
                 case "shorterThanOrEqual":
                     if(mb_strlen($this->requestContent[$fieldName]) >= $conditionDetails['value'])
