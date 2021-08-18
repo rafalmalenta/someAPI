@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Entity\Opinion;
 use App\Services\PayloadValidator;
+use App\Services\Strategies\ShorterOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,51 +36,55 @@ class OpinionController extends AbstractController
      */
     public function addOpinion(Request $request, Book $book,EntityManagerInterface $entityManager): Response
     {
-        $payloadValidator = new PayloadValidator($request->getContent());
-        if(!$payloadValidator->isRequestValidJson()){
+        $payloadValidator = new PayloadValidator();
+        if(!$payloadValidator->isRequestValidJson($request->getContent())){
             return $this->json([
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $payloadValidator->validateField("rating",[
-            "greaterThanOrEqual"=>['value'=>1],
-            "smallerThanOrEqual"=>['value'=>10],
-        ]);
-        $payloadValidator->validateField("description",[
-            "longerThanOrEqual"=>['value'=>2],
-            "shorterThanOrEqual"=>['value'=>500],
-        ]);
-        $payloadValidator->validateField("author",[
-            "longerThanOrEqual"=>['value'=>2],
-            "shorterThanOrEqual"=>['value'=>100],
-        ]);
-        $payloadValidator->validateField("email",[
-            "ifExistValidate"=>[ 'value'=>'/^\S+@\S+$/','msg'=>"email is not required, dont send fake one"],
-        ]);
-        if (!$payloadValidator->allIsGood())
-            return $this->json([
-                "errors" => $payloadValidator->getErrors()
-            ]);
-        $payload = $payloadValidator->getRequestContent();
-        try {
-            $opinion = new Opinion();
-            $opinion->setDescription($payload["description"])
-                ->setAuthor($payload["author"])
-                ->setRating($payload["rating"])
-                ->setCreated(new \DateTime("now"))
-                ->setBook($book);
-            if(key_exists("email",$payload))
-                $opinion->setEmail($payload["email"]);
-            $entityManager->persist($opinion);
-            $entityManager->flush();
-            return $this->json([
-                "message" => "opinion added"
-            ],203);
-        }
-        catch (\Exception $e){
-            return $this->json([
-                "error" => $e->getMessage()
-            ],500);
-        }
+        $shorterOrEq = new ShorterOrEqualStrategy(11);
+//        $payloadValidator->setStrategy($shorterOrEq);
+        $payloadValidator->validate("author",true,[$shorterOrEq]);
+//        dd($payloadValidator->validate("author",true,15));
+//        $payloadValidator->validateField("rating",[
+//            "greaterThanOrEqual"=>['value'=>1],
+//            "smallerThanOrEqual"=>['value'=>10],
+//        ]);
+//        $payloadValidator->validateField("description",[
+//            "longerThanOrEqual"=>['value'=>2],
+//            "shorterThanOrEqual"=>['value'=>500],
+//        ]);
+//        $payloadValidator->validateField("author",[
+//            "longerThanOrEqual"=>['value'=>2],
+//            "shorterThanOrEqual"=>['value'=>100],
+//        ]);
+//        $payloadValidator->validateField("email",[
+//            "ifExistValidate"=>[ 'value'=>'/^\S+@\S+$/','msg'=>"email is not required, dont send fake one"],
+//        ]);
+//        if (!$payloadValidator->allIsGood())
+//            return $this->json([
+//                "errors" => $payloadValidator->getErrors()
+//            ]);
+//        $payload = $payloadValidator->getRequestContent();
+//        try {
+//            $opinion = new Opinion();
+//            $opinion->setDescription($payload["description"])
+//                ->setAuthor($payload["author"])
+//                ->setRating($payload["rating"])
+//                ->setCreated(new \DateTime("now"))
+//                ->setBook($book);
+//            if(key_exists("email",$payload))
+//                $opinion->setEmail($payload["email"]);
+//            $entityManager->persist($opinion);
+//            $entityManager->flush();
+//            return $this->json([
+//                "message" => "opinion added"
+//            ],203);
+//        }
+//        catch (\Exception $e){
+//            return $this->json([
+//                "error" => $e->getMessage()
+//            ],500);
+//        }
     }
 }
