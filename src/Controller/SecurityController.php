@@ -7,6 +7,9 @@ use App\Entity\Author;
 use App\Services\JWTService;
 use App\Services\PayloadValidator;
 use App\Services\RequestValidator;
+use App\Services\Strategies\LongerOrEqualStrategy;
+use App\Services\Strategies\RegExStrategy;
+use App\Services\Strategies\ShorterOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,9 +29,9 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-        $payloadValidator = new PayloadValidator($request->getContent());
+        $payloadValidator = new PayloadValidator();
 
-        if(!$payloadValidator->isRequestValidJson()){
+        if(!$payloadValidator->isRequestValidJson($request->getContent())){
             return $this->json([
                 'error' => 'bad request',
             ])->setStatusCode(400);
@@ -58,33 +61,21 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-        $payloadValidator = new PayloadValidator($request->getContent());
-        if (!$payloadValidator->isRequestValidJson())
+        $payloadValidator = new PayloadValidator();
+        if (!$payloadValidator->isRequestValidJson($request->getContent()))
             return $this->json([
                 'error' => 'bad payload',
             ])->setStatusCode(400);
-        $payloadValidator->validateField("password", [
-            "longerThanOrEqual" =>['value'=> 7],
-            "shorterThanOrEqual" => ['value'=>250],
-            "regEx" =>['value'=>'/^(?=.*[a-z])(?=.*[A-Z]).*$/',
-                'msg'=>"password must contain at least one upper case and lowercase letter"
-                ],
-            "passwordCheck"=>[]
-        ]);
-        $payloadValidator->validateField("name", [
-            "longerThanOrEqual" =>['value'=> 2],
-            "shorterThanOrEqual" => ['value'=>50]
-        ]);
-        $payloadValidator->validateField("surname", [
-            "longerThanOrEqual" =>['value'=> 2],
-            "shorterThanOrEqual" => ['value'=>100]
-        ]);
-        $payloadValidator->validateField("email", [
-            "regEx" =>[
-                'value'=>'/^\S+@\S+$/',
-                'msg'=>"it doesnt looks like valid email"
-            ]
-        ]);
+        $passwordStrategy = [new LongerOrEqualStrategy(7), new ShorterOrEqualStrategy(250), new RegExStrategy('/^(?=.*[a-z])(?=.*[A-Z]).*$/')];
+        $payloadValidator->validate("password",true,$passwordStrategy);
+        $payloadValidator->passwordsMatch();
+        $nameStrategy = [new LongerOrEqualStrategy(2),new ShorterOrEqualStrategy(50)];
+        $payloadValidator->validate("name",true,$nameStrategy);
+        $surnameStrategy = [new LongerOrEqualStrategy(2), new ShorterOrEqualStrategy(100)];
+        $payloadValidator->validate("surname",true,$surnameStrategy);
+        $emailStrategies = [new RegExStrategy("/^\S+@\S+$/")];
+        $payloadValidator->validate("email",true, $emailStrategies);
+
         if(!$payloadValidator->allIsGood())
             return $this->json([
                 'errors'=>$payloadValidator->getErrors()

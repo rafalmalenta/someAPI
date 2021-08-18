@@ -2,7 +2,7 @@
 
 namespace App\Services\Strategies;
 
-class LongerOrEqualStrategy implements ValidationStrategy
+class SmallerThanOrEqualStrategy implements ValidationStrategy
 {
     private string $condition;
     private string $message;
@@ -14,9 +14,9 @@ class LongerOrEqualStrategy implements ValidationStrategy
 
     public function validate($fieldValue, $name): bool
     {
-        if (mb_strlen($fieldValue) >= $this->condition)
+        if ($fieldValue < $this->condition)
             return true;
-        $this->message = "$name should have minimum $this->condition characters";
+        $this->message = "$name must be smaller or equal $this->condition";
         return false;
     }
 
@@ -24,4 +24,5 @@ class LongerOrEqualStrategy implements ValidationStrategy
     {
         return $this->message;
     }
+
 }

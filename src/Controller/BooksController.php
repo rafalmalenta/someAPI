@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Services\PayloadValidator;
 use App\Services\RequestValidator;
+use App\Services\Strategies\LongerOrEqualStrategy;
+use App\Services\Strategies\ShorterOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -63,24 +65,20 @@ class BooksController extends AbstractController
      */
     public function addBook(Request $request, EntityManagerInterface $manager): Response
     {
-        $payloadValidator = new PayloadValidator($request->getContent());
+        $payloadValidator = new PayloadValidator();
         $user = $this->getUser();
-        if(!$payloadValidator->isRequestValidJson()){
+        if(!$payloadValidator->isRequestValidJson($request->getContent())){
             return $this->json([
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $payloadValidator->validateField("title",[
-            "longerThanOrEqual"=>['value'=>1],
-            "shorterThanOrEqual"=>['value'=>200],
-        ]);
-        $payloadValidator->validateField("description",[
-            "longerThanOrEqual"=>['value'=>1],
-        ]);
-        $payloadValidator->validateField("isbn",[
-            "longerThanOrEqual"=>['value'=>4],
-            "shorterThanOrEqual"=>['value'=>13],
-        ]);
+        $tittleStrategy = [new LongerOrEqualStrategy(1), new ShorterOrEqualStrategy(200)];
+        $payloadValidator->validate("title",true,$tittleStrategy);
+        $descriptionStrategy = [new LongerOrEqualStrategy(1)];
+        $payloadValidator->validate("description",true,$descriptionStrategy);
+        $isbnStrategy = [new LongerOrEqualStrategy(4), new ShorterOrEqualStrategy(13)];
+        $payloadValidator->validate("isbn",true, $isbnStrategy);
+
 
         if(!$payloadValidator->allIsGood()) {
             return $this->json([
@@ -117,20 +115,18 @@ class BooksController extends AbstractController
     public function editBook(Book $book, Request $request, EntityManagerInterface $manager): Response
     {
         $this->denyAccessUnlessGranted('OWNS', $book);
-        $payloadValidator = new PayloadValidator($request->getContent());
+        $payloadValidator = new PayloadValidator();
         $user = $this->getUser();
-        if(!$payloadValidator->isRequestValidJson()){
+        if(!$payloadValidator->isRequestValidJson($request->getContent())){
             return $this->json([
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $payloadValidator->validateField("title",[
-            "longerThanOrEqual"=>['value'=>1],
-            "shorterThanOrEqual"=>['value'=>200],
-        ]);
-        $payloadValidator->validateField("description",[
-            "longerThanOrEqual"=>['value'=>1],
-        ]);
+        $tittleStrategy = [new LongerOrEqualStrategy(1), new ShorterOrEqualStrategy(200)];
+        $payloadValidator->validate("title",true,$tittleStrategy);
+        $descriptionStrategy = [new LongerOrEqualStrategy(1)];
+        $payloadValidator->validate("description",true,$descriptionStrategy);
+
         if(!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()

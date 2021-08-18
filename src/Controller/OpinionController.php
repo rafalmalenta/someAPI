@@ -5,7 +5,11 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Entity\Opinion;
 use App\Services\PayloadValidator;
+use App\Services\Strategies\GreaterThanStrategy;
+use App\Services\Strategies\LongerOrEqualStrategy;
+use App\Services\Strategies\RegExStrategy;
 use App\Services\Strategies\ShorterOrEqualStrategy;
+use App\Services\Strategies\SmallerThanOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,49 +46,39 @@ class OpinionController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $shorterOrEq = new ShorterOrEqualStrategy(11);
-//        $payloadValidator->setStrategy($shorterOrEq);
-        $payloadValidator->validate("author",true,[$shorterOrEq]);
-//        dd($payloadValidator->validate("author",true,15));
-//        $payloadValidator->validateField("rating",[
-//            "greaterThanOrEqual"=>['value'=>1],
-//            "smallerThanOrEqual"=>['value'=>10],
-//        ]);
-//        $payloadValidator->validateField("description",[
-//            "longerThanOrEqual"=>['value'=>2],
-//            "shorterThanOrEqual"=>['value'=>500],
-//        ]);
-//        $payloadValidator->validateField("author",[
-//            "longerThanOrEqual"=>['value'=>2],
-//            "shorterThanOrEqual"=>['value'=>100],
-//        ]);
-//        $payloadValidator->validateField("email",[
-//            "ifExistValidate"=>[ 'value'=>'/^\S+@\S+$/','msg'=>"email is not required, dont send fake one"],
-//        ]);
-//        if (!$payloadValidator->allIsGood())
-//            return $this->json([
-//                "errors" => $payloadValidator->getErrors()
-//            ]);
-//        $payload = $payloadValidator->getRequestContent();
-//        try {
-//            $opinion = new Opinion();
-//            $opinion->setDescription($payload["description"])
-//                ->setAuthor($payload["author"])
-//                ->setRating($payload["rating"])
-//                ->setCreated(new \DateTime("now"))
-//                ->setBook($book);
-//            if(key_exists("email",$payload))
-//                $opinion->setEmail($payload["email"]);
-//            $entityManager->persist($opinion);
-//            $entityManager->flush();
-//            return $this->json([
-//                "message" => "opinion added"
-//            ],203);
-//        }
-//        catch (\Exception $e){
-//            return $this->json([
-//                "error" => $e->getMessage()
-//            ],500);
-//        }
+        $authorStrategies = [new ShorterOrEqualStrategy(100), new LongerOrEqualStrategy(2)];
+        $payloadValidator->validate("author",true, $authorStrategies);
+        $ratingStrategies = [new GreaterThanStrategy(1), new SmallerThanOrEqualStrategy(10)];
+        $payloadValidator->validate("rating",true, $ratingStrategies);
+        $descriptionStrategies = [new LongerOrEqualStrategy(2), new ShorterOrEqualStrategy(500)];
+        $payloadValidator->validate("description",true, $descriptionStrategies);
+        $emailStrategies = [new RegExStrategy("/^\S+@\S+$/")];
+        $payloadValidator->validate("email",false, $emailStrategies);
+
+        if (!$payloadValidator->allIsGood())
+            return $this->json([
+                "errors" => $payloadValidator->getErrors()
+            ]);
+        $payload = $payloadValidator->getRequestContent();
+        try {
+            $opinion = new Opinion();
+            $opinion->setDescription($payload["description"])
+                ->setAuthor($payload["author"])
+                ->setRating($payload["rating"])
+                ->setCreated(new \DateTime("now"))
+                ->setBook($book);
+            if(key_exists("email",$payload))
+                $opinion->setEmail($payload["email"]);
+            $entityManager->persist($opinion);
+            $entityManager->flush();
+            return $this->json([
+                "message" => "opinion added"
+            ],203);
+        }
+        catch (\Exception $e){
+            return $this->json([
+                "error" => $e->getMessage()
+            ],$e->getCode());
+        }
     }
 }
