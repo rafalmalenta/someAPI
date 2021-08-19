@@ -6,10 +6,6 @@ namespace App\Controller;
 use App\Entity\Author;
 use App\Services\JWTService;
 use App\Services\PayloadValidator;
-use App\Services\RequestValidator;
-use App\Services\Strategies\LongerOrEqualStrategy;
-use App\Services\Strategies\RegExStrategy;
-use App\Services\Strategies\ShorterOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -68,8 +64,7 @@ class SecurityController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         $requiredFields = ["name","surname","email","password","password2"];
-        foreach ($requiredFields as $field)
-            $payloadValidator->existenceCheck($field);
+        $payloadValidator->allRequiredFieldsPassed($requiredFields);
         if (!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()

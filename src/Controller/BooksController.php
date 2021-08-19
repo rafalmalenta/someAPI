@@ -4,9 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Services\PayloadValidator;
-use App\Services\RequestValidator;
-use App\Services\Strategies\LongerOrEqualStrategy;
-use App\Services\Strategies\ShorterOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,8 +71,7 @@ class BooksController extends AbstractController
             ])->setStatusCode(400);
         }
         $requiredFields = ["title","description","isbn"];
-        foreach ($requiredFields as $field)
-            $payloadValidator->existenceCheck($field);
+        $payloadValidator->allRequiredFieldsPassed($requiredFields);
         if (!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
@@ -127,8 +123,8 @@ class BooksController extends AbstractController
             ])->setStatusCode(400);
         }
         $requiredFields = ["title","description"];
-        foreach ($requiredFields as $field)
-            $payloadValidator->existenceCheck($field);
+
+        $payloadValidator->allRequiredFieldsPassed($requiredFields);
         if(!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()

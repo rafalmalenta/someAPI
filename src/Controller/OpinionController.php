@@ -48,8 +48,7 @@ class OpinionController extends AbstractController
             ])->setStatusCode(400);
         }
         $requiredFields = ["rating","description","author"];
-        foreach ($requiredFields as $field)
-            $payloadValidator->existenceCheck($field);
+        $payloadValidator->allRequiredFieldsPassed($requiredFields);
         if (!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
