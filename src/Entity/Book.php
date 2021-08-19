@@ -6,6 +6,7 @@ use App\Repository\BookRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=BookRepository::class)
  */
@@ -16,18 +17,34 @@ class Book
      * @ORM\Id
      * @ORM\Column(type="string", length=13, unique=true)
      * @Groups({"mybooks","bookList","details"})
+     * @Assert\Length(
+     *      min = 4,
+     *      max = 13,
+     *      minMessage = "ISBN must be at least {{ limit }} characters long",
+     *      maxMessage = "ISBN name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $isbn;
 
     /**
      * @ORM\Column(type="string", length=200)
      * @Groups({"mybooks","bookList","details"})
+     * @Assert\Length(
+     *      min = 1,
+     *      max = 200,
+     *      minMessage = "title must be at least {{ limit }} characters long",
+     *      maxMessage = "title name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
      * @Groups({"mybooks","bookList","details"})
+     * @Assert\Length(
+     *      min = 1,
+     *      minMessage = "description must be at least {{ limit }} characters long",
+     * )
      */
     private $description;
 

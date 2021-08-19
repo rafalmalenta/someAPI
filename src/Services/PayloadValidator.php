@@ -23,6 +23,16 @@ class PayloadValidator
         }
         return false;
     }
+    public function existenceCheck(string $fieldName): bool
+    {
+        $fieldNameExist = $this->offsetExistenceCheck($fieldName);
+        if(!$fieldNameExist)
+        {
+            $this->errors[] = "required field ".$fieldName." is missing";
+            return false;
+        }
+        return true;
+    }
     public function validate(string $fieldName, bool $required, array $strategyArray): bool
     {
         $fieldNameExist = $this->offsetExistenceCheck($fieldName);

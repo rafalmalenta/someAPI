@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SecurityController extends AbstractController
 {
@@ -56,7 +57,7 @@ class SecurityController extends AbstractController
      * @return JsonResponse
      * @Route("register", name="register", methods="POST")
      */
-    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder): Response
+    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder, ValidatorInterface $validator): Response
     {
         /**
          * @var $user Author
@@ -66,33 +67,46 @@ class SecurityController extends AbstractController
             return $this->json([
                 'error' => 'bad payload',
             ])->setStatusCode(400);
-        $passwordStrategy = [new LongerOrEqualStrategy(7), new ShorterOrEqualStrategy(250), new RegExStrategy('/^(?=.*[a-z])(?=.*[A-Z]).*$/')];
-        $payloadValidator->validate("password",true,$passwordStrategy);
-        $payloadValidator->passwordsMatch();
-        $nameStrategy = [new LongerOrEqualStrategy(2),new ShorterOrEqualStrategy(50)];
-        $payloadValidator->validate("name",true,$nameStrategy);
-        $surnameStrategy = [new LongerOrEqualStrategy(2), new ShorterOrEqualStrategy(100)];
-        $payloadValidator->validate("surname",true,$surnameStrategy);
-        $emailStrategies = [new RegExStrategy("/^\S+@\S+$/")];
-        $payloadValidator->validate("email",true, $emailStrategies);
-
-        if(!$payloadValidator->allIsGood())
+        $requiredFields = ["name","surname","email","password","password2"];
+        foreach ($requiredFields as $field)
+            $payloadValidator->existenceCheck($field);
+        if (!$payloadValidator->allIsGood())
             return $this->json([
-                'errors'=>$payloadValidator->getErrors()
-            ])->setStatusCode(400);
+                "errors" => $payloadValidator->getErrors()
+            ],400);
 
-        $payLoad = $payloadValidator->getRequestContent();
-        $emailDuplicate = $entityManager->getRepository(Author::class)->findBy(['email'=>$payLoad['email']]);
+
+        $payload = $payloadValidator->getRequestContent();
+        $emailDuplicate = $entityManager->getRepository(Author::class)->findBy(['email'=>$payload['email']]);
+        $passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d]{7,250}$/';
+
         if ($emailDuplicate)
             return $this->json([
                 'errors'=>'email taken'
             ])->setStatusCode(400);
 
+        if($payload['password'] !== $payload["password2"])
+            return $this->json([
+                'errors'=>'passwords are different'
+            ])->setStatusCode(400);
+        if(!preg_match($passwordRegex,$payload['password']) )
+            return $this->json([
+                'errors'=>'Password must contain at least one lowercase and one uppercase letter, lenght between 7 and 250characters'
+            ])->setStatusCode(400);
+
         $user = new Author();
-            $user->setName($payLoad["name"])
-                ->setSurname($payLoad["surname"])
-                ->setEmail($payLoad["email"])
-                ->setPassword($passwordEncoder->hashPassword($user, $payLoad['password']));
+        $user->setName($payload["name"])
+            ->setSurname($payload["surname"])
+            ->setEmail($payload["email"])
+            ->setPassword($passwordEncoder->hashPassword($user, $payload['password']));
+        $errors = $validator->validate($user);
+        if (count($errors)>0) {
+            foreach ($errors as $error)
+                $errorsList[] = $error->getMessage();
+            return $this->json([
+                "errors" => $errorsList
+            ],400);
+        }
         try {
             $entityManager->persist($user);
             $entityManager->flush();

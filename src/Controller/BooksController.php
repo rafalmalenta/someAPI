@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
 class BooksController extends AbstractController
@@ -63,7 +64,7 @@ class BooksController extends AbstractController
      * @Route("/books", name="addbook", methods={"POST"})
      * @IsGranted("ROLE_AUTHOR")
      */
-    public function addBook(Request $request, EntityManagerInterface $manager): Response
+    public function addBook(Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
     {
         $payloadValidator = new PayloadValidator();
         $user = $this->getUser();
@@ -72,19 +73,14 @@ class BooksController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $tittleStrategy = [new LongerOrEqualStrategy(1), new ShorterOrEqualStrategy(200)];
-        $payloadValidator->validate("title",true,$tittleStrategy);
-        $descriptionStrategy = [new LongerOrEqualStrategy(1)];
-        $payloadValidator->validate("description",true,$descriptionStrategy);
-        $isbnStrategy = [new LongerOrEqualStrategy(4), new ShorterOrEqualStrategy(13)];
-        $payloadValidator->validate("isbn",true, $isbnStrategy);
-
-
-        if(!$payloadValidator->allIsGood()) {
+        $requiredFields = ["title","description","isbn"];
+        foreach ($requiredFields as $field)
+            $payloadValidator->existenceCheck($field);
+        if (!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
-            ]);
-        }
+            ],400);
+
         $body = $payloadValidator->getRequestContent();
         $duplicateISBN = $manager->getRepository(Book::class)->findBy(['isbn' => $body['isbn']]);
         if ($duplicateISBN)
@@ -96,6 +92,14 @@ class BooksController extends AbstractController
             ->setDescription($body['description'])
             ->setAuthor($user)
             ->setCreated(new \DateTime('now'));
+        $errors = $validator->validate($newBook);
+        if (count($errors)>0) {
+            foreach ($errors as $error)
+                $errorsList[] = $error->getMessage();
+            return $this->json([
+                "errors" => $errorsList
+            ],400);
+        }
         try {
             $manager->persist($newBook);
             $manager->flush();
@@ -112,7 +116,7 @@ class BooksController extends AbstractController
      * @Route("/books/{isbn}", name="editbook", methods={"PATCH"})
      * @IsGranted("ROLE_AUTHOR")
      */
-    public function editBook(Book $book, Request $request, EntityManagerInterface $manager): Response
+    public function editBook(Book $book, Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
     {
         $this->denyAccessUnlessGranted('OWNS', $book);
         $payloadValidator = new PayloadValidator();
@@ -122,11 +126,9 @@ class BooksController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $tittleStrategy = [new LongerOrEqualStrategy(1), new ShorterOrEqualStrategy(200)];
-        $payloadValidator->validate("title",true,$tittleStrategy);
-        $descriptionStrategy = [new LongerOrEqualStrategy(1)];
-        $payloadValidator->validate("description",true,$descriptionStrategy);
-
+        $requiredFields = ["title","description"];
+        foreach ($requiredFields as $field)
+            $payloadValidator->existenceCheck($field);
         if(!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
@@ -134,6 +136,14 @@ class BooksController extends AbstractController
         $payload = $payloadValidator->getRequestContent();
         $book->setTitle($payload['title'])
             ->setDescription($payload['description']);
+        $errors = $validator->validate($book);
+        if (count($errors)>0) {
+            foreach ($errors as $error)
+                $errorsList[] = $error->getMessage();
+            return $this->json([
+                "errors" => $errorsList
+            ],400);
+        }
         $manager->flush();
         return $this->json([
             "message" => "edited"

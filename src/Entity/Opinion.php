@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Repository\OpinionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=OpinionRepository::class)
  */
@@ -21,18 +21,35 @@ class Opinion
     /**
      * @ORM\Column(type="smallint")
      * @Groups({"details"})
+     * @Assert\Range(
+     *     min = 1,
+     *     max = 10,
+     *     notInRangeMessage = "rating must be between {{ min }} and {{ max }}"
+     * )
      */
     private $rating;
 
     /**
      * @ORM\Column(type="text")
      * @Groups({"details"})
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 500,
+     *      minMessage = "description must be at least {{ limit }} characters long",
+     *      maxMessage = "description name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Groups({"details"})
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 100,
+     *      minMessage = "description must be at least {{ limit }} characters long",
+     *      maxMessage = "description name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $author;
 
@@ -45,6 +62,11 @@ class Opinion
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
      * @Groups({"details"})
+     * @Assert\Regex(
+     *     pattern="/^\S+@\S+$/",
+     *     match=true,
+     *     message="This doesnt looks like real email"
+     * )
      */
     private $email;
 

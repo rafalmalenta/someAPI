@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class OpinionController extends AbstractController
 {
@@ -38,7 +39,7 @@ class OpinionController extends AbstractController
     /**
      * @Route("/books/{isbn}/opinions", name="addOpinion", methods={"POST"})
      */
-    public function addOpinion(Request $request, Book $book,EntityManagerInterface $entityManager): Response
+    public function addOpinion(Request $request, Book $book,EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
         $payloadValidator = new PayloadValidator();
         if(!$payloadValidator->isRequestValidJson($request->getContent())){
@@ -46,29 +47,32 @@ class OpinionController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         }
-        $authorStrategies = [new ShorterOrEqualStrategy(100), new LongerOrEqualStrategy(2)];
-        $payloadValidator->validate("author",true, $authorStrategies);
-        $ratingStrategies = [new GreaterThanStrategy(1), new SmallerThanOrEqualStrategy(10)];
-        $payloadValidator->validate("rating",true, $ratingStrategies);
-        $descriptionStrategies = [new LongerOrEqualStrategy(2), new ShorterOrEqualStrategy(500)];
-        $payloadValidator->validate("description",true, $descriptionStrategies);
-        $emailStrategies = [new RegExStrategy("/^\S+@\S+$/")];
-        $payloadValidator->validate("email",false, $emailStrategies);
-
+        $requiredFields = ["rating","description","author"];
+        foreach ($requiredFields as $field)
+            $payloadValidator->existenceCheck($field);
         if (!$payloadValidator->allIsGood())
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
-            ]);
+            ],400);
+
         $payload = $payloadValidator->getRequestContent();
+        $opinion = new Opinion();
+        $opinion->setDescription($payload["description"])
+            ->setAuthor($payload["author"])
+            ->setRating($payload["rating"])
+            ->setCreated(new \DateTime("now"))
+            ->setBook($book);
+        if(key_exists("email",$payload))
+                $opinion->setEmail($payload["email"]);;
+        $errors = $validator->validate($opinion);
+        if (count($errors)>0) {
+            foreach ($errors as $error)
+                $errorsList[] = $error->getMessage();
+            return $this->json([
+                "errors" => $errorsList
+            ],400);
+        }
         try {
-            $opinion = new Opinion();
-            $opinion->setDescription($payload["description"])
-                ->setAuthor($payload["author"])
-                ->setRating($payload["rating"])
-                ->setCreated(new \DateTime("now"))
-                ->setBook($book);
-            if(key_exists("email",$payload))
-                $opinion->setEmail($payload["email"]);
             $entityManager->persist($opinion);
             $entityManager->flush();
             return $this->json([
@@ -77,8 +81,9 @@ class OpinionController extends AbstractController
         }
         catch (\Exception $e){
             return $this->json([
-                "error" => $e->getMessage()
-            ],$e->getCode());
+                "error" => "internal server error"
+            ],500);
         }
     }
+
 }

@@ -7,6 +7,7 @@
         "php": ">=7.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-json": "*",
         "adhocore/jwt": "^1.1",
         "composer/package-versions-deprecated": "1.11.99.2",
         "doctrine/annotations": "^1.0",
@@ -26,8 +27,8 @@
         "symfony/runtime": "5.3.*",
         "symfony/security-bundle": "5.3.*",
         "symfony/serializer": "5.3.*",
-        "symfony/yaml": "5.3.*",
-      "ext-json": "*"
+        "symfony/validator": "5.3.*",
+        "symfony/yaml": "5.3.*"
     },
     "require-dev": {
         "symfony/debug-bundle": "5.3.*",

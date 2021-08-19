@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=AuthorRepository::class)
@@ -19,6 +20,11 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\Regex(
+     *     pattern="/^\S+@\S+$/",
+     *     match=true,
+     *     message="This doesnt looks like real email"
+     * )
      */
     private $email;
 
@@ -40,11 +46,23 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 50,
+     *      minMessage = "name must be at least {{ limit }} characters long",
+     *      maxMessage = "name name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 100,
+     *      minMessage = "surname must be at least {{ limit }} characters long",
+     *      maxMessage = "surname name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $surname;
 
