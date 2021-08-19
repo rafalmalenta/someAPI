@@ -33,6 +33,13 @@ class SecurityController extends AbstractController
                 'error' => 'bad request',
             ])->setStatusCode(400);
         }
+        $requiredFields = ["email","password"];
+
+        if (!$payloadValidator->allRequiredFieldsPassed($requiredFields))
+            return $this->json([
+                "errors" => $payloadValidator->getErrors()
+            ],400);
+
         $payload = $payloadValidator->getRequestContent();
 
         $email = $payload['email'];
@@ -84,6 +91,7 @@ class SecurityController extends AbstractController
             return $this->json([
                 'errors'=>'passwords are different'
             ])->setStatusCode(400);
+
         if(!preg_match($passwordRegex,$payload['password']) )
             return $this->json([
                 'errors'=>'Password must contain at least one lowercase and one uppercase letter, lenght between 7 and 250characters'

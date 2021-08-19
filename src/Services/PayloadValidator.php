@@ -9,11 +9,9 @@ use App\Services\Strategies\ValidationStrategy;
 class PayloadValidator
 {
 
-    private array $requestContent;
+    private  $requestContent;
 
     private array $errors = [];
-
-    private ValidationStrategy $validationStrategy;
 
     public function isRequestValidJson(string $json): bool
     {
