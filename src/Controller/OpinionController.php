@@ -5,11 +5,6 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Entity\Opinion;
 use App\Services\PayloadValidator;
-use App\Services\Strategies\GreaterThanStrategy;
-use App\Services\Strategies\LongerOrEqualStrategy;
-use App\Services\Strategies\RegExStrategy;
-use App\Services\Strategies\ShorterOrEqualStrategy;
-use App\Services\Strategies\SmallerThanOrEqualStrategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,8 +43,7 @@ class OpinionController extends AbstractController
             ])->setStatusCode(400);
         }
         $requiredFields = ["rating","description","author"];
-        $payloadValidator->allRequiredFieldsPassed($requiredFields);
-        if (!$payloadValidator->allIsGood())
+        if (!$payloadValidator->allRequiredFieldsPassed($requiredFields))
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
             ],400);

@@ -64,8 +64,8 @@ class SecurityController extends AbstractController
                 'error' => 'bad payload',
             ])->setStatusCode(400);
         $requiredFields = ["name","surname","email","password","password2"];
-        $payloadValidator->allRequiredFieldsPassed($requiredFields);
-        if (!$payloadValidator->allIsGood())
+
+        if (!$payloadValidator->allRequiredFieldsPassed($requiredFields))
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
             ],400);

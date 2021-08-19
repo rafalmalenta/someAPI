@@ -18,7 +18,7 @@ class JWTServiceTest extends TestCase
 
         $this->assertSame("Testowanko", $jwt->getToken($token));
     }
-    public function testTokenExpiresAfter600Seconds()
+    public function testTokenExpiresAfter6000Seconds()
     {
         $jwt = new JWTService();
         $token = $jwt->generateToken("Testowanko");

@@ -71,8 +71,8 @@ class BooksController extends AbstractController
             ])->setStatusCode(400);
         }
         $requiredFields = ["title","description","isbn"];
-        $payloadValidator->allRequiredFieldsPassed($requiredFields);
-        if (!$payloadValidator->allIsGood())
+
+        if (!$payloadValidator->allRequiredFieldsPassed($requiredFields))
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
             ],400);
@@ -124,8 +124,7 @@ class BooksController extends AbstractController
         }
         $requiredFields = ["title","description"];
 
-        $payloadValidator->allRequiredFieldsPassed($requiredFields);
-        if(!$payloadValidator->allIsGood())
+        if(!$payloadValidator->allRequiredFieldsPassed($requiredFields))
             return $this->json([
                 "errors" => $payloadValidator->getErrors()
             ]);
