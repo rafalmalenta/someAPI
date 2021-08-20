@@ -129,6 +129,11 @@ class BooksController extends AbstractController
                 "errors" => $payloadValidator->getErrors()
             ]);
         $payload = $payloadValidator->getRequestContent();
+        if(!$book)
+            return $this->json([
+                "errors" => "no such book exists"
+            ],404);
+
         $book->setTitle($payload['title'])
             ->setDescription($payload['description']);
         $errors = $validator->validate($book);

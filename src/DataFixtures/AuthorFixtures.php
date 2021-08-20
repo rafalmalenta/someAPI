@@ -25,5 +25,4 @@ class AuthorFixtures extends Fixture
         $manager->persist($author);
         $manager->flush();
     }
-
 }
