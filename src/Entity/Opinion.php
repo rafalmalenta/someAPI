@@ -71,7 +71,7 @@ class Opinion
     private $email;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Book")
+     * @ORM\ManyToOne(targetEntity="Book", inversedBy="opinions" )
      * @ORM\JoinColumn(name="book_isbn", referencedColumnName="isbn")
      */
     private $book;

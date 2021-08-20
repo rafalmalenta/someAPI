@@ -55,7 +55,7 @@ class Book
     private $created;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Author")
+     * @ORM\ManyToOne(targetEntity="Author", inversedBy="books")
      * @ORM\JoinColumn(name="author_email", referencedColumnName="email")
      * @Groups({"bookList","details"})
      */

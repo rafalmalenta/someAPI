@@ -32,6 +32,10 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
+        "liip/test-fixtures-bundle": "^2.0.0",
+        "phpunit/phpunit": "^9.5",
+        "symfony/browser-kit": "5.3.*",
+        "symfony/css-selector": "^5.3",
         "symfony/debug-bundle": "5.3.*",
         "symfony/maker-bundle": "^1.33",
         "symfony/var-dumper": "5.3.*"
