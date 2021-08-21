@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Tests\Controller;
-use App\DataFixtures\AuthorFixtures;
 
+use App\DataFixtures\AuthorFixtures;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Liip\TestFixturesBundle\Services\DatabaseTools\AbstractDatabaseTool;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -16,7 +16,7 @@ class SecurityControllerTest extends WebTestCase
 
     public function setUp(): void
     {
-        $this->testClient = static::createClient();
+        $this->testClient = static::createClient([],[]);
         $container = self::$kernel->getContainer();
         $this->databaseTool = $container->get(DatabaseToolCollection::class)->get( null,'doctrine');
         $this->databaseTool->loadFixtures(
@@ -86,4 +86,5 @@ class SecurityControllerTest extends WebTestCase
         $crawler = $this->testClient->request('POST', '/register',[],[],[],$passwordTooLong);
         $this->assertResponseStatusCodeSame(400);
     }
+
 }

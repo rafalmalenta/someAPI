@@ -34,7 +34,6 @@ class BooksAuthenticator extends AbstractAuthenticator
 
         $authorizationHeader = $request->headers->get('Authorization');
         $token = substr($authorizationHeader, 7);
-
         if($this->JWTService->verifyToken($token)){
             $email = $this->JWTService->getToken($token);
             return new SelfValidatingPassport(new UserBadge($email));
