@@ -62,7 +62,7 @@ class Book
     private $author;
     /**
      * @ORM\OneToMany(targetEntity="Opinion", mappedBy="book")
-     * @Groups({"mybooks","details"})
+     * @Groups({"details"})
      */
     private $opinions;
 
