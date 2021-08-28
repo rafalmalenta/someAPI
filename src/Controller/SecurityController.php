@@ -26,7 +26,7 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-        dd($request->request);
+
         $payloadValidator = new PayloadValidator();
 
         if(!$payloadValidator->isRequestValidJson($request->getContent())){

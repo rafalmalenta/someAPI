@@ -12,7 +12,7 @@ class JWTService
 
     public function __construct()
     {
-       $this->JWT = new JWT("secret",'HS256', 6000);
+       $this->JWT = new JWT($_ENV['supersecretsecret'],'HS256', 6000);
     }
     public function generateToken($email):string
     {
