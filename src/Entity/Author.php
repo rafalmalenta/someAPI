@@ -36,8 +36,21 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Assert\Regex(
+     *     pattern="/^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d]{7,250}$/",
+     *     match=true,
+     *     message="Password must contain at least one lowercase and one uppercase letter, length between 7 and 250characters"
+     * )
      */
     private $password;
+
+    /**
+     * @Assert\Expression(
+     *     "this.getPassword() == value",
+     *     message="Passwords must be the same"
+     * )
+     */
+    private $password2;
 
     /**
      * @ORM\OneToMany(targetEntity=Book::class, mappedBy="author", orphanRemoval=true, indexBy="isbn")
@@ -127,6 +140,10 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->password;
     }
+    public function getPassword2(): string
+    {
+        return $this->password2;
+    }
 
     public function setPassword(string $password): self
     {
@@ -135,6 +152,12 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function setPassword2(string $password2): self
+    {
+        $this->password2 = $password2;
+
+        return $this;
+    }
     /**
      * Returning a salt is only needed, if you are not using a modern
      * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 
 use App\Entity\Author;
+use App\Form\AuthorType;
 use App\Services\JWTService;
 use App\Services\PayloadValidator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,7 +27,11 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
-
+        $form = $this->createForm(AuthorType::class );
+        $form->submit($request->request->all());
+        dd($form->getData());
+        dd((string)$form->getErrors(true,false));
+//        $form->getErrors();
         $payloadValidator = new PayloadValidator();
 
         if(!$payloadValidator->isRequestValidJson($request->getContent())){
@@ -66,6 +71,13 @@ class SecurityController extends AbstractController
         /**
          * @var $user Author
          */
+        $form = $this->createForm(AuthorType::class );
+        $form->submit($request->request->all());
+        if($form->isValid()){
+//            dd($form->getData());
+        }
+//        dd($form->getData());
+        dd((string)$form->getErrors(true,false));
         $payloadValidator = new PayloadValidator();
         if (!$payloadValidator->isRequestValidJson($request->getContent()))
             return $this->json([
@@ -95,7 +107,7 @@ class SecurityController extends AbstractController
 
         if(!preg_match($passwordRegex,$payload['password']) )
             return $this->json([
-                'errors'=>'Password must contain at least one lowercase and one uppercase letter, lenght between 7 and 250characters'
+                'errors'=>'Password must contain at least one lowercase and one uppercase letter, length between 7 and 250characters'
             ])->setStatusCode(400);
 
         $user = new Author();
