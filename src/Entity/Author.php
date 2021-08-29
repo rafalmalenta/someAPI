@@ -6,6 +6,7 @@ use App\Repository\AuthorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -13,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=AuthorRepository::class)
+ * @UniqueEntity("email")
  */
 class Author implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -25,6 +27,8 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
      *     match=true,
      *     message="This doesnt looks like real email"
      * )
+     * @Assert\NotNull
+     *
      */
     private $email;
 
@@ -41,6 +45,7 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
      *     match=true,
      *     message="Password must contain at least one lowercase and one uppercase letter, length between 7 and 250characters"
      * )
+     * @Assert\NotNull
      */
     private $password;
 
@@ -65,6 +70,7 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "name must be at least {{ limit }} characters long",
      *      maxMessage = "name name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $name;
 
@@ -76,6 +82,7 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "surname must be at least {{ limit }} characters long",
      *      maxMessage = "surname name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $surname;
 
@@ -140,7 +147,7 @@ class Author implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->password;
     }
-    public function getPassword2(): string
+    public function getPassword2(): ?string
     {
         return $this->password2;
     }
