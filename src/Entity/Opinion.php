@@ -26,6 +26,7 @@ class Opinion
      *     max = 10,
      *     notInRangeMessage = "rating must be between {{ min }} and {{ max }}"
      * )
+     * @Assert\NotNull
      */
     private $rating;
 
@@ -38,6 +39,7 @@ class Opinion
      *      minMessage = "description must be at least {{ limit }} characters long",
      *      maxMessage = "description name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $description;
 
@@ -50,6 +52,7 @@ class Opinion
      *      minMessage = "description must be at least {{ limit }} characters long",
      *      maxMessage = "description name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $author;
 

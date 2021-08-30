@@ -4,14 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Form\BookType;
-use App\Services\PayloadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
 class BooksController extends AbstractController
@@ -62,7 +60,7 @@ class BooksController extends AbstractController
      * @Route("/books", name="addbook", methods={"POST"})
      * @IsGranted("ROLE_AUTHOR")
      */
-    public function addBook(Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
+    public function addBook(Request $request, EntityManagerInterface $manager): Response
     {
         $author = $this->getUser();
         $form = $this->createForm(BookType::class );
@@ -86,7 +84,7 @@ class BooksController extends AbstractController
      * @Route("/books/{isbn}", name="editbook", methods={"PATCH"})
      * @IsGranted("ROLE_AUTHOR")
      */
-    public function editBook(Book $book, Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
+    public function editBook(Book $book, Request $request, EntityManagerInterface $manager): Response
     {
         $this->denyAccessUnlessGranted('OWNS', $book);
         $form = $this->createForm(BookType::class, $book, ['is_edit'=>true] );
@@ -107,7 +105,7 @@ class BooksController extends AbstractController
      * @Route("/books/{isbn}", name="removebook", methods={"DELETE"})
      * @IsGranted("ROLE_AUTHOR")
      */
-    public function deleteBook(Book $book, Request $request, EntityManagerInterface $manager): Response
+    public function deleteBook(Book $book, EntityManagerInterface $manager): Response
     {
         $this->denyAccessUnlessGranted('OWNS', $book);
         $comments = $book->getOpinions();
