@@ -5,10 +5,13 @@ namespace App\Entity;
 use App\Repository\BookRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * @ORM\Entity(repositoryClass=BookRepository::class)
+ * @UniqueEntity("isbn")
  */
 class Book
 {
@@ -23,6 +26,7 @@ class Book
      *      minMessage = "ISBN must be at least {{ limit }} characters long",
      *      maxMessage = "ISBN name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $isbn;
 
@@ -35,6 +39,7 @@ class Book
      *      minMessage = "title must be at least {{ limit }} characters long",
      *      maxMessage = "title name cannot be longer than {{ limit }} characters"
      * )
+     * @Assert\NotNull
      */
     private $title;
 
@@ -45,11 +50,12 @@ class Book
      *      min = 1,
      *      minMessage = "description must be at least {{ limit }} characters long",
      * )
+     * @Assert\NotNull
      */
     private $description;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="datetime")
      * @Groups({"mybooks","bookList","details"})
      */
     private $created;
@@ -102,9 +108,14 @@ class Book
         return $this;
     }
 
-    public function getCreated(): ?string
+    public function getCreatedString(): ?string
     {
         return $this->created->format("m/d/Y");
+    }
+
+    public function getCreated(): ?\DateTime
+    {
+        return $this->created;
     }
 
     public function setCreated(\DateTimeInterface $created): self

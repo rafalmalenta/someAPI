@@ -23,7 +23,6 @@ class SecurityController extends AbstractController
      */
     public function getToken(Request $request,EntityManagerInterface $entityManager,UserPasswordHasherInterface $passwordEncoder,JWTService $JWTservice): Response
     {
-
         $form = $this->createForm(LoginType::class );
         $form->submit($request->request->all());
         if ($form->isValid()) {

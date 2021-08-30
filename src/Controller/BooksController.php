@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Book;
+use App\Form\BookType;
 use App\Services\PayloadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -63,50 +64,20 @@ class BooksController extends AbstractController
      */
     public function addBook(Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
     {
-        $payloadValidator = new PayloadValidator();
-        $user = $this->getUser();
-        if(!$payloadValidator->isRequestValidJson($request->getContent())){
-            return $this->json([
-                'error' => 'bad payload',
-            ])->setStatusCode(400);
-        }
-        $requiredFields = ["title","description","isbn"];
-
-        if (!$payloadValidator->allRequiredFieldsPassed($requiredFields))
-            return $this->json([
-                "errors" => $payloadValidator->getErrors()
-            ],400);
-
-        $body = $payloadValidator->getRequestContent();
-        $duplicateISBN = $manager->getRepository(Book::class)->findBy(['isbn' => $body['isbn']]);
-        if ($duplicateISBN)
-            return $this->json(["error" => "duplicated isbn"], 400);
-
-        $newBook = new Book();
-        $newBook->setTitle($body['title'])
-            ->setIsbn($body['isbn'])
-            ->setDescription($body['description'])
-            ->setAuthor($user)
-            ->setCreated(new \DateTime('now'));
-        $errors = $validator->validate($newBook);
-        if (count($errors)>0) {
-            foreach ($errors as $error)
-                $errorsList[] = $error->getMessage();
-            return $this->json([
-                "errors" => $errorsList
-            ],400);
-        }
-        try {
+        $form = $this->createForm(BookType::class );
+        $form->submit($request->request->all());
+        if ($form->isValid()) {
+            $newBook = $form->getData();
+            $newBook->setCreated(new \DateTime('now'));
             $manager->persist($newBook);
             $manager->flush();
             return $this->json([
-                'success' => 'book added',
-            ])->setStatusCode(406);
-        } catch (\Exception $exception) {
-            return $this->json([
-                'error' => 'failed to save',
-            ])->setStatusCode(500);
+                'status' => 'created',
+            ])->setStatusCode(203);
         }
+        return $this->json([
+            (string) $form->getErrors(true,false),
+        ])->setStatusCode(400);
     }
     /**
      * @Route("/books/{isbn}", name="editbook", methods={"PATCH"})
