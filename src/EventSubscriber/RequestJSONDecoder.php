@@ -27,7 +27,7 @@ class RequestJSONDecoder implements EventSubscriberInterface
             return;
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = $request->toArray();//json_decode($request->getContent(), true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new BadRequestHttpException('invalid json body: ' . json_last_error_msg());

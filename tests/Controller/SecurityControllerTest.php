@@ -44,6 +44,7 @@ class SecurityControllerTest extends WebTestCase
             "{\"email\": \"mark@twain.xx\",\"password\": \"12345Qwe\",\"password2\": \"12345Qwe\",
             \"name\": \"somename\",\"surname\": \"somesurname\"}");
         $this->assertResponseStatusCodeSame(400);
+        dd($this->assertStringContainsString("email taken",$this->testClient->getResponse()->getContent()));
         $this->assertStringContainsString("email taken",$this->testClient->getResponse()->getContent());
 
     }
