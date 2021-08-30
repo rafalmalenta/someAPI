@@ -18,7 +18,7 @@ class BookType extends AbstractType
             ->add('title')
             ->add('description')
             ->add('created',DateType::class, ['required' => false,'disabled' => true ])
-            ->add('author',null, ['required' => false])
+            ->add('author',null, ['required' => false, 'disabled' => true])
         ;
     }
 

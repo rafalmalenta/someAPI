@@ -64,11 +64,14 @@ class BooksController extends AbstractController
      */
     public function addBook(Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
     {
+        $author = $this->getUser();
         $form = $this->createForm(BookType::class );
         $form->submit($request->request->all());
         if ($form->isValid()) {
             $newBook = $form->getData();
             $newBook->setCreated(new \DateTime('now'));
+            $newBook->setAuthor($author);
+
             $manager->persist($newBook);
             $manager->flush();
             return $this->json([
@@ -86,42 +89,22 @@ class BooksController extends AbstractController
     public function editBook(Book $book, Request $request, EntityManagerInterface $manager, ValidatorInterface $validator): Response
     {
         $this->denyAccessUnlessGranted('OWNS', $book);
-        $payloadValidator = new PayloadValidator();
-        $user = $this->getUser();
-        if(!$payloadValidator->isRequestValidJson($request->getContent())){
+        $form = $this->createForm(BookType::class, $book, ['is_edit'=>true] );
+        $form->submit($request->request->all());
+        if ($form->isValid()) {
+            $newBook = $form->getData();
+            $manager->persist($newBook);
+            $manager->flush();
             return $this->json([
-                'error' => 'bad payload',
-            ])->setStatusCode(400);
+                'status' => 'edited',
+            ])->setStatusCode(200);
         }
-        $requiredFields = ["title","description"];
-
-        if(!$payloadValidator->allRequiredFieldsPassed($requiredFields))
-            return $this->json([
-                "errors" => $payloadValidator->getErrors()
-            ]);
-        $payload = $payloadValidator->getRequestContent();
-        if(!$book)
-            return $this->json([
-                "errors" => "no such book exists"
-            ],404);
-
-        $book->setTitle($payload['title'])
-            ->setDescription($payload['description']);
-        $errors = $validator->validate($book);
-        if (count($errors)>0) {
-            foreach ($errors as $error)
-                $errorsList[] = $error->getMessage();
-            return $this->json([
-                "errors" => $errorsList
-            ],400);
-        }
-        $manager->flush();
         return $this->json([
-            "message" => "edited"
-        ]);
+            (string) $form->getErrors(true,false),
+        ])->setStatusCode(400);
     }
     /**
-     * @Route("/books/{isbn}", name="editbook", methods={"DELETE"})
+     * @Route("/books/{isbn}", name="removebook", methods={"DELETE"})
      * @IsGranted("ROLE_AUTHOR")
      */
     public function deleteBook(Book $book, Request $request, EntityManagerInterface $manager): Response
@@ -136,7 +119,7 @@ class BooksController extends AbstractController
             $manager->remove($book);
             $manager->flush();
             return $this->json([
-                "message"=>"deleted"
+                "status"=>"deleted"
             ])->setStatusCode(203);
         }
         catch (\Exception $e)

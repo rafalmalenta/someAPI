@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class OpinionController extends AbstractController
 {
     /**
-     * @Route("/books/{isbn}", name="details")
+     * @Route("/books/{isbn}", name="details", methods={"GET"})
      */
     public function details(Book $book): Response
     {
