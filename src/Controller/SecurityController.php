@@ -57,6 +57,9 @@ class SecurityController extends AbstractController
             $author->setPassword($passwordEncoder->hashPassword($author, $author->getPassword()));
             $entityManager->persist($author);
             $entityManager->flush();
+            return $this->json([
+                'status' => 'created',
+            ])->setStatusCode(201);
         }
 
         return $this->json( $form->getErrors(true, true));

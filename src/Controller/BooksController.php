@@ -73,7 +73,7 @@ class BooksController extends AbstractController
             $manager->flush();
             return $this->json([
                 'status' => 'created',
-            ])->setStatusCode(203);
+            ])->setStatusCode(201);
         }
         return $this->json([
             (string) $form->getErrors(true,false),
