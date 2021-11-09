@@ -1,8 +1,8 @@
-FROM php:7.4-cli
+FROM php:7.4-apache
 
-RUN mkdir /books
-WORKDIR /books
-COPY . /books
+#RUN mkdir /books
+#WORKDIR /books
+#COPY . /books
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN apt-get update && apt-get install -y \
     zlib1g-dev \
@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install pdo pdo_mysql
 
-RUN composer install
+RUN curl -sSk https://getcomposer.org/installer | php -- --disable-tls && \
+       mv composer.phar /usr/local/bin/composer
 
 EXPOSE 8000
 
-CMD ["php","-S","0.0.0.0:8000","-t","public"]
+#CMD ["php","-S","0.0.0.0:8000","-t","public"]

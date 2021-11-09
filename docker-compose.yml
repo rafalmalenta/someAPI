@@ -1,15 +1,25 @@
 version: "3"
 
 services:
-  php-task:
-    container_name: booksapi
-    build: "./"
-    ports:
-    - 5555:8000
+  php-apache-environment:
+    container_name: php-apache
+#    image: php:7.4-apache
+    build:
+      context: ./
+      dockerfile: Dockerfile
     volumes:
-    - ./:/books/
-    depends_on:
-      - database
+      - ./:/var/www/html/
+    ports:
+      - 8000:80
+#  php-task:
+#    container_name: booksapi
+#    build: "./"
+#    ports:
+#    - 5555:8000
+#    volumes:
+#    - ./:/books/
+#    depends_on:
+#      - database
   database:
     container_name: database
     image: 'mariadb:latest'
