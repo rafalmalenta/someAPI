@@ -46,7 +46,7 @@ class BooksController extends AbstractController
     {
         $user = $this->getUser();
         $myBooks = $manager->getRepository(Book::class)->findBy(["author"=>$user]);
-
+        dd($user);
         return $this->json([
             $myBooks,
         ],

@@ -15,5 +15,9 @@ RUN curl -sSk https://getcomposer.org/installer | php -- --disable-tls && \
        mv composer.phar /usr/local/bin/composer
 
 RUN a2enmod rewrite
+RUN a2enmod headers
+
+WORKDIR /etc
+COPY ./apache/apache2.conf ./apache2/
 RUN service apache2 restart
 

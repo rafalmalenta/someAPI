@@ -25,6 +25,7 @@ class BooksAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
+        dd($request->headers);
         return $request->headers->has('Authorization')
             && str_starts_with($request->headers->get('Authorization'), 'Bearer ');
     }
