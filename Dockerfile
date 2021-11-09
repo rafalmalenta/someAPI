@@ -14,6 +14,6 @@ RUN docker-php-ext-install pdo pdo_mysql
 RUN curl -sSk https://getcomposer.org/installer | php -- --disable-tls && \
        mv composer.phar /usr/local/bin/composer
 
-EXPOSE 8000
+RUN a2enmod rewrite
+RUN service apache2 restart
 
-#CMD ["php","-S","0.0.0.0:8000","-t","public"]
